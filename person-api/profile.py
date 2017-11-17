@@ -2,6 +2,7 @@ import boto3
 import idp
 import json
 import logging
+import urllib
 
 import vault
 
@@ -36,7 +37,7 @@ class Query(object):
     def user_id(self):
         path = self.event.get('path')
         parameter = path.get('authzero_id')
-        return parameter
+        return urllib.parse.unquote(parameter)
 
     @property
     def token(self):
@@ -60,6 +61,9 @@ def handler(event, context):
 
     # Extract the bits we care about.
     user_id = q.user_id
+
+    print(user_id)
+
     scope = q.scope
 
     # New up a boto session
