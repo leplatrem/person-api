@@ -1,0 +1,50 @@
+service: person-api
+plugins:
+  - serverless-python-requirements
+custom:
+  stage: ${opt:stage, 'dev'}
+  pythonRequirement:
+    dockerizePip: false
+provider:
+  name: aws
+  runtime: python3.6
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+      Resource: ${file(config.${self:provider.stage}.yml):CIS_DYNAMODB_ARN}
+functions:
+  auth:
+    handler: auth.handler
+    environment:
+      AUTH0_URL: ${file(config.${self:provider.stage}.yml):AUTH0_URL}
+      AUDIENCE: ${file(config.${self:provider.stage}.yml):AUDIENCE}
+      CIS_DYNAMODB_TABLE: ${file(config.${self:provider.stage}.yml):CIS_DYNAMODB_TABLE}
+  # Bulk of profile retrieval operations.  Will be protected by auth.
+  profilePrivate:
+    handler: profile.handler
+    environment:
+      AUTH0_URL: ${file(config.${self:provider.stage}.yml):AUTH0_URL}
+      AUDIENCE: ${file(config.${self:provider.stage}.yml):AUDIENCE}
+      CIS_DYNAMODB_TABLE: ${file(config.${self:provider.stage}.yml):CIS_DYNAMODB_TABLE}
+    events:
+      - http:
+          path: profile/{authzero_id}
+          method: get
+          integration: lambda
+          authorizer: auth
+          cors:
+            origins:
+              - '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+          request:
+            parameters:
+               paths:
+                 authzero_id: true

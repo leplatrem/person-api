@@ -1,0 +1,4 @@
+AUTH0_URL: auth.mozilla.auth0.com
+AUDIENCE: https://person-api.sso.mozilla.com
+CIS_DYNAMODB_TABLE: cis-stream-prod-and-idv-IdentityVaultUsers-LMGGZ2XE8K6F
+CIS_DYNAMODB_ARN: arn:aws:dynamodb:*:*:table/cis-stream-prod-and-idv-IdentityVaultUsers-LMGGZ2XE8K6F
